@@ -9,6 +9,7 @@ jobs:
 
       - name: Unzip Project
         run: |
+          mkdir -p project_folder
           unzip -q Quran_Libya.zip -d project_folder
 
       - name: Set up JDK 17
@@ -19,9 +20,15 @@ jobs:
 
       - name: Build AAB with Gradle
         run: |
-          cd project_folder
-          DIR=$(find . -name "gradlew" -exec dirname {} \;)
-          cd "$DIR"
+          # العثور على مكان وجود ملف gradlew التنفيذي في أي مجلد فرعي والانتقال إليه
+          GRADLEW_PATH=$(find project_folder -name "gradlew" -type f -print -quit)
+          if [ -z "$GRADLEW_PATH" ]; then
+            echo "Error: gradlew not found!"
+            exit 1
+          fi
+          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          echo "Found project at: $PROJECT_DIR"
+          cd "$PROJECT_DIR"
           chmod +x gradlew
           ./gradlew bundleRelease
 
