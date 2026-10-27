@@ -6,15 +6,27 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Unzip Project
+        run: |
+          unzip -q Quran_Libya.zip -d project_folder
+
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
+
       - name: Build AAB with Gradle
-        run: ./gradlew bundleRelease
+        run: |
+          cd project_folder
+          DIR=$(find . -name "gradlew" -exec dirname {} \;)
+          cd "$DIR"
+          chmod +x gradlew
+          ./gradlew bundleRelease
+
       - name: Upload AAB Artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-release-aab
-          path: app/build/outputs/bundle/release/*.aab
+          path: '**/build/outputs/bundle/release/*.aab'
