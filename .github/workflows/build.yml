@@ -12,20 +12,19 @@ jobs:
           mkdir -p project_folder
           unzip -q Quran_Libya.zip -d project_folder
 
-      - name: Set up JDK 17
+      - name: Set up JDK 11
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '17'
+          java-version: '11'
 
-      - name: Install Gradle
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gradle
+      - name: Setup Gradle 7.5
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '7.5'
 
-      - name: Generate Wrapper and Build AAB
+      - name: Build AAB
         run: |
-          # العثور على مكان وجود ملف build.gradle داخل المشروع الفكوك
           BUILD_FILE=$(find project_folder -name "build.gradle" -type f -print -quit)
           if [ -z "$BUILD_FILE" ]; then
             echo "Error: build.gradle not found!"
@@ -35,8 +34,9 @@ jobs:
           echo "Found project at: $PROJECT_DIR"
           cd "$PROJECT_DIR"
           
-          # توليد ملفات التشغيل المفقودة تلقائياً
-          gradle wrapper
+          if [ ! -f "gradlew" ]; then
+            gradle wrapper --gradle-version 7.5
+          fi
           
           chmod +x gradlew
           ./gradlew bundleRelease
