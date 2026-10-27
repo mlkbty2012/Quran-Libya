@@ -18,17 +18,26 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Build AAB with Gradle
+      - name: Install Gradle
         run: |
-          # العثور على مكان وجود ملف gradlew التنفيذي في أي مجلد فرعي والانتقال إليه
-          GRADLEW_PATH=$(find project_folder -name "gradlew" -type f -print -quit)
-          if [ -z "$GRADLEW_PATH" ]; then
-            echo "Error: gradlew not found!"
+          sudo apt-get update
+          sudo apt-get install -y gradle
+
+      - name: Generate Wrapper and Build AAB
+        run: |
+          # العثور على مكان وجود ملف build.gradle داخل المشروع الفكوك
+          BUILD_FILE=$(find project_folder -name "build.gradle" -type f -print -quit)
+          if [ -z "$BUILD_FILE" ]; then
+            echo "Error: build.gradle not found!"
             exit 1
           fi
-          PROJECT_DIR=$(dirname "$GRADLEW_PATH")
+          PROJECT_DIR=$(dirname "$BUILD_FILE")
           echo "Found project at: $PROJECT_DIR"
           cd "$PROJECT_DIR"
+          
+          # توليد ملفات التشغيل المفقودة تلقائياً
+          gradle wrapper
+          
           chmod +x gradlew
           ./gradlew bundleRelease
 
